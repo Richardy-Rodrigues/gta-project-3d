@@ -6,7 +6,7 @@ namespace Unity.FPS.Gameplay
 {
     // Applies a temporary ground-speed boost to the player.
     // Lives on the player (like Jetpack) so the boost survives the pickup being destroyed.
-    [RequireComponent(typeof(PlayerCharacterController))]
+    // Added automatically to the player by SpeedBoostPickup when first collected.
     public class PlayerSpeedBoost : MonoBehaviour
     {
         PlayerCharacterController m_Controller;

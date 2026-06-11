@@ -17,6 +17,9 @@ inimigos da fase, com sistema de pontuação e itens coletáveis de velocidade.
   - [Sistema de Pontuação](#1-sistema-de-pontuação)
   - [Pickup de Velocidade](#2-pickup-de-velocidade)
   - [Pickup de Escudo](#3-pickup-de-escudo)
+  - [Música e som de início](#4-música-e-som-de-início)
+  - [Carrossel de fundo do menu](#5-carrossel-de-fundo-do-menu)
+  - [Variedade de inimigos](#6-variedade-de-inimigos)
 - [Estrutura do projeto](#-estrutura-do-projeto)
 - [Créditos](#-créditos)
 
@@ -70,12 +73,8 @@ git clone git@github.com:Richardy-Rodrigues/gta-project-3d.git
 | Olhar / virar câmera | Mouse | Right Stick |
 | Atirar | Botão esquerdo do mouse | RT (gatilho direito) |
 | Mirar (zoom) | Botão direito do mouse | LT (gatilho esquerdo) |
-| Correr | `Left Shift` | L3 (apertar stick esq.) |
 | Pular | `Espaço` | A (botão sul) |
 | Agachar | `C` | — |
-| Recarregar | `R` | X (botão oeste) |
-| Trocar de arma | Scroll do mouse / `Q` · `E` | D-Pad |
-| Selecionar arma | Teclas `1`–`9` | — |
 | Pausar / Opções | `Tab` | — |
 
 ---
@@ -407,6 +406,201 @@ namespace Unity.FPS.Gameplay
 
 ---
 
+### 4. Música e som de início
+
+O menu inicial toca uma **música em loop** e, ao clicar em **Play**, a música para, toca um
+**som de confirmação** e o jogo inicia após um **pequeno delay**.
+
+**Como funciona:**
+- A música do menu é um `AudioSource` (com *Play On Awake* + *Loop*) num objeto da cena
+  `IntroMenu`.
+- O botão Start usa o componente `StartGameButton`: ao ser clicado, ele para a música, toca
+  o som de confirmação (via `PlayOneShot`), espera `DelayBeforeStart` segundos e então carrega
+  a fase. Tem proteção contra clique duplo.
+
+**Configuração na Unity:**
+- Objeto `MenuMusic` com `AudioSource` na cena `IntroMenu`.
+- Componente **StartGameButton** no botão Start, com **Scene Name**, **Delay Before Start**,
+  **Menu Music** (o AudioSource) e **Click Sound** preenchidos; o `OnClick` do botão chama
+  `StartGame()`.
+
+<details>
+<summary><strong>📄 StartGameButton.cs</strong></summary>
+
+```csharp
+using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace Unity.FPS.UI
+{
+    // Wire StartGame() to the Start button's OnClick.
+    // On press: stops the menu music, plays a confirm sound, waits a delay, then loads the game scene.
+    public class StartGameButton : MonoBehaviour
+    {
+        [Tooltip("Name of the scene to load (must be in Build Settings)")]
+        public string SceneName = "";
+
+        [Tooltip("Seconds to wait after pressing before the game starts")]
+        public float DelayBeforeStart = 1f;
+
+        [Tooltip("The menu music AudioSource to stop on press (optional)")]
+        public AudioSource MenuMusic;
+
+        [Tooltip("Sound played when the button is pressed (optional)")]
+        public AudioClip ClickSound;
+
+        bool m_Started;
+
+        public void StartGame()
+        {
+            // Prevent double clicks during the delay
+            if (m_Started)
+                return;
+            m_Started = true;
+
+            if (MenuMusic)
+            {
+                MenuMusic.Stop();
+
+                // PlayOneShot plays the confirm sound once, independent of the music clip/loop
+                if (ClickSound)
+                    MenuMusic.PlayOneShot(ClickSound);
+            }
+
+            StartCoroutine(LoadAfterDelay());
+        }
+
+        IEnumerator LoadAfterDelay()
+        {
+            yield return new WaitForSeconds(DelayBeforeStart);
+            SceneManager.LoadScene(SceneName);
+        }
+    }
+}
+```
+</details>
+
+---
+
+### 5. Carrossel de fundo do menu
+
+O fundo do menu inicial **alterna entre várias imagens** automaticamente, com transição em
+fade — dando um visual mais dinâmico.
+
+**Como funciona:**
+- O componente `MenuBackgroundCarousel` fica no `BackgroundImage` do menu (que usa um
+  `RawImage`). Ele troca a textura do fundo a cada `DisplayTime` segundos, com um fade de
+  `FadeDuration` entre uma imagem e outra, em loop.
+
+**Configuração na Unity:**
+- Componente **MenuBackgroundCarousel** no `BackgroundImage` da cena `IntroMenu`.
+- Campos: **Images** (lista de texturas), **Display Time** e **Fade Duration**.
+
+<details>
+<summary><strong>📄 MenuBackgroundCarousel.cs</strong></summary>
+
+```csharp
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Unity.FPS.UI
+{
+    // Cycles through a list of background textures on a UI RawImage, with an optional fade.
+    // Put this on the menu's BackgroundImage (which uses a RawImage component).
+    [RequireComponent(typeof(RawImage))]
+    public class MenuBackgroundCarousel : MonoBehaviour
+    {
+        [Tooltip("Textures to alternate as the background, in order")]
+        public Texture[] Images;
+
+        [Tooltip("How long each image stays on screen, in seconds")]
+        public float DisplayTime = 4f;
+
+        [Tooltip("Duration of the fade between images, in seconds (0 = instant swap)")]
+        public float FadeDuration = 0.5f;
+
+        RawImage m_Image;
+        int m_Index;
+
+        void Start()
+        {
+            m_Image = GetComponent<RawImage>();
+
+            if (Images == null || Images.Length == 0)
+                return;
+
+            // Start showing the first image
+            m_Image.texture = Images[0];
+
+            // Only cycle if there is more than one image
+            if (Images.Length > 1)
+                StartCoroutine(CarouselRoutine());
+        }
+
+        IEnumerator CarouselRoutine()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(DisplayTime);
+
+                m_Index = (m_Index + 1) % Images.Length;
+
+                if (FadeDuration > 0f)
+                {
+                    yield return Fade(1f, 0f);   // fade out current image
+                    m_Image.texture = Images[m_Index];
+                    yield return Fade(0f, 1f);   // fade in next image
+                }
+                else
+                {
+                    m_Image.texture = Images[m_Index];
+                }
+            }
+        }
+
+        IEnumerator Fade(float from, float to)
+        {
+            float elapsed = 0f;
+            Color color = m_Image.color;
+
+            while (elapsed < FadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                color.a = Mathf.Lerp(from, to, elapsed / FadeDuration);
+                m_Image.color = color;
+                yield return null;
+            }
+
+            color.a = to;
+            m_Image.color = color;
+        }
+    }
+}
+```
+</details>
+
+---
+
+### 6. Variedade de inimigos
+
+Além dos dois inimigos base — **HoverBot** (voador, móvel) e **Turret** (fixo) — o mapa pode
+ter **variações** criadas como *Prefab Variants*, com tamanho, cor e atributos diferentes
+(vida, velocidade, alcance), por exemplo:
+
+| Variação | Características |
+|----------|----------------|
+| **Tank** | Grande, muita vida, lento |
+| **Scout** | Pequeno, rápido, pouca vida |
+| **Elite** | Cor diferente, mais alcance/dano |
+
+> Não exige código: são *Prefab Variants* do `Enemy_HoverBot` / `Enemy_Turret` com ajustes
+> nos componentes `Health`, `Navigation Module`, `Detection Module` e materiais. Todo inimigo
+> novo é contabilizado automaticamente na condição de vitória.
+
+---
+
 ## 📂 Estrutura do projeto
 
 ```
@@ -417,7 +611,8 @@ Assets/FPS/
     ├── AI/          # Inimigos: EnemyController, EnemyMobile, EnemyTurret, detecção...
     ├── Game/        # Núcleo: Events, EventManager, managers (inclui ScoreManager)
     ├── Gameplay/    # Jogador, armas, pickups (Speed Boost e Shield + componentes do player)
-    └── UI/          # HUD e telas (inclui ScoreCounter, FinalScoreDisplay)
+    └── UI/          # HUD e telas (ScoreCounter, FinalScoreDisplay, StartGameButton,
+                     #   MenuBackgroundCarousel)
 ```
 
 ---

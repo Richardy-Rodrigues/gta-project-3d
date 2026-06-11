@@ -6,6 +6,7 @@ inimigos da fase, com sistema de pontuação e itens coletáveis de velocidade.
 
 [Gameplay do Jogo](https://youtu.be/Z1CEib5nAco)
 
+![Menu](docs/images/menu.png)
 ![Gameplay](docs/images/gameplay.jpeg)
 
 ---

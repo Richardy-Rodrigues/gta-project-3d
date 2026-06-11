@@ -4,7 +4,9 @@ Jogo de tiro em primeira pessoa (FPS) construído sobre o template **Unity FPS M
 usando **Unity 6** e o **Universal Render Pipeline (URP)**. O objetivo é eliminar todos os
 inimigos da fase, com sistema de pontuação e itens coletáveis de velocidade.
 
-![Gameplay](docs/images/gameplay.png)
+[Gameplay do Jogo](https://youtu.be/Z1CEib5nAco)
+
+![Gameplay](docs/images/gameplay.jpeg)
 
 ---
 
@@ -102,7 +104,7 @@ e mostra o **placar final** na tela de vitória.
 - **ScoreCounter** num texto (TextMeshPro) dentro do `GameHUD.prefab`.
 - **FinalScoreDisplay** num texto na `WinScene`.
 
-![Sistema de Pontuação no HUD](docs/images/score-hud.png)
+![Sistema de Pontuação no HUD](docs/images/gameplay2.jpeg)
 
 <details>
 <summary><strong>📄 ScoreManager.cs</strong></summary>
@@ -222,7 +224,7 @@ Um item coletável que dá ao jogador um **aumento temporário de velocidade** d
   (padrão `5s`).
 - O componente `PlayerSpeedBoost` é adicionado automaticamente ao jogador na primeira coleta.
 
-![Pickup de Velocidade](docs/images/speedboost.png)
+![Pickup de Velocidade](docs/images/gameplay.jpeg)
 
 <details>
 <summary><strong>📄 PlayerSpeedBoost.cs</strong> (no jogador)</summary>
@@ -327,7 +329,6 @@ segundos.
 - Campo configurável no Inspector: **Duration** (padrão `5s`).
 - O componente `PlayerShield` é adicionado automaticamente ao jogador na primeira coleta.
 
-![Pickup de Escudo](docs/images/shield.png)
 
 <details>
 <summary><strong>📄 PlayerShield.cs</strong> (no jogador)</summary>

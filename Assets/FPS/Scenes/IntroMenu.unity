@@ -1101,6 +1101,7 @@ GameObject:
   - component: {fileID: 1833309140}
   - component: {fileID: 1833309142}
   - component: {fileID: 1833309141}
+  - component: {fileID: 1833309143}
   m_Layer: 5
   m_Name: BackgroundImage
   m_TagString: Untagged
@@ -1163,6 +1164,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1833309139}
   m_CullTransparentMesh: 0
+--- !u!114 &1833309143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1833309139}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f772f843037826c47ac09797ff1fe775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: fps.UI::Unity.FPS.UI.MenuBackgroundCarousel
+  Images:
+  - {fileID: 2800000, guid: 5730973e716fc584b9b0dc32c01cc8ee, type: 3}
+  - {fileID: 2800000, guid: 32c74ee1c54172744995d708e4bb2bfb, type: 3}
+  - {fileID: 2800000, guid: d219e0083c2efee4c8d0d2f96986dbf4, type: 3}
+  DisplayTime: 4
+  FadeDuration: 0.5
 --- !u!1 &1834908382
 GameObject:
   m_ObjectHideFlags: 0
